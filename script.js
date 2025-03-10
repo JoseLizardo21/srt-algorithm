@@ -1,0 +1,232 @@
+let procesos = [];
+let tablaResultados = [];
+
+function ingresarProcesos() {
+  let numProcesos = parseInt(document.getElementById("numProcesos").value);
+  if (isNaN(numProcesos) || numProcesos < 1) {
+    return;
+  }
+  let formProcesos = document.getElementById("formProcesos");
+  formProcesos.innerHTML = "";
+  for (let i = 0; i < numProcesos; i++) {
+    formProcesos.innerHTML += `
+      <div class="mb-2">
+        Proceso ${i + 1}:
+        <div class="d-flex flex-row">
+          <label>Llegada:</label>
+          <input type="number" id="llegada${i}" required style="width: 80px">
+          <label class="ms-2">Duración:</label>
+          <input type="number" id="duracion${i}" required style="width: 80px">
+        </div>
+      </div>`;
+  }
+  document.getElementById("iniciarSimulacion").style.display = "block";
+}
+
+function simularSRTF() {
+  let numProcesos = parseInt(document.getElementById("numProcesos").value);
+  procesos = [];
+  tablaResultados = [];
+  mostrarTablaResultados([]);
+  let colores = generarColores(numProcesos);
+  for (let i = 0; i < numProcesos; i++) {
+    let llegada = parseInt(document.getElementById(`llegada${i}`).value);
+    let duracion = parseInt(document.getElementById(`duracion${i}`).value);
+    procesos.push({ id: i + 1, llegada, duracion, restante: duracion, color: colores[i]});
+  }
+  procesos.sort((a, b) => a.llegada - b.llegada);
+  ejecutarSRTF();
+}
+
+function ejecutarSRTF() {
+  let tiempoActual = 0;
+  let finalizados = 0;
+  let ganttChart = {};
+  let enEjecucion = null;
+
+  while (finalizados < procesos.length) {
+    let listaEjecutable = procesos.filter(
+      (p) => p.llegada <= tiempoActual && p.restante > 0
+    );
+    let procesoActual =
+      listaEjecutable.length > 0
+        ? listaEjecutable.reduce(
+            (min, p) => (p.restante < min.restante ? p : min),
+            listaEjecutable[0]
+          )
+        : null;
+
+    procesos.forEach((p) => {
+      if (!ganttChart[p.id]) ganttChart[p.id] = [];
+      if (p === procesoActual) {
+        ganttChart[p.id].push({ t: tiempoActual, tipo: "ejecucion" });
+      } else if (p.restante > 0 && p.llegada <= tiempoActual) {
+        ganttChart[p.id].push({ t: tiempoActual, tipo: "espera" });
+      }
+    });
+
+    if (procesoActual) {
+      procesoActual.restante--;
+      if (procesoActual.restante === 0) finalizados++;
+    }
+    tiempoActual++;
+  }
+  generarDatosTabla(ganttChart);
+  animarGantt(ganttChart, tiempoActual);
+}
+
+
+function generarDatosTabla(ganttChart) {
+  let procesosCopy = [...procesos];
+  procesosCopy.forEach(p => {
+    let ejecuciones = ganttChart[p.id].filter(e => e.tipo === "ejecucion");
+    
+    p.arranque = ejecuciones.length > 0 ? ejecuciones[0].t : null; // Primer instante de ejecución
+    p.finalizacion = ejecuciones.length > 0 ? ejecuciones[ejecuciones.length - 1].t + 1 : null; // Último instante de ejecución +1
+
+    p.T = p.finalizacion - p.llegada;
+    p.W = p.T - p.duracion;
+    p.P = (p.duracion > 0) ? (p.T / p.duracion).toFixed(2) : 0;
+
+    tablaResultados.push(p);
+  });
+}
+
+
+function animarGantt(ganttChart, tiempoMax) {
+  let canvas = document.getElementById("ganttCanvas");
+  let ctx = canvas.getContext("2d");
+  let tiempo = 0;
+  let altura = 50;
+  let escalaTiempo = (canvas.width / tiempoMax) * 0.9;
+  let procesosOrdenados = Object.keys(ganttChart).sort((a, b) => b - a);
+
+  function dibujarFrame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Dibujar ejes
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(50, 20);
+    ctx.lineTo(50, canvas.height - 50);
+    ctx.lineTo(canvas.width - 20, canvas.height - 50);
+    ctx.stroke();
+
+    // Etiquetas de tiempo en el eje X
+    ctx.fillStyle = "black";
+    for (let t = 0; t <= tiempoMax; t++) {
+      let x = 50 + t * escalaTiempo;
+      ctx.fillText(t, x, canvas.height - 30);
+    }
+
+    // Dibujar procesos
+    procesosOrdenados.forEach((proceso, index) => {
+      let y = canvas.height - 50 - (index + 1) * altura;
+      let ejecucion = ganttChart[proceso].filter(
+        (e) => e.t <= tiempo && e.tipo === "ejecucion"
+      );
+      let espera = ganttChart[proceso].filter(
+        (e) => e.t <= tiempo && e.tipo === "espera"
+      );
+
+      console.log(proceso, index);
+      // Dibujar ejecuciones
+      ctx.fillStyle = procesos.find(p => p.id == proceso).color; 
+      ctx.strokeStyle = "black";
+      ctx.setLineDash([]);
+      ejecucion.forEach((e) => {
+        ctx.fillRect(50 + e.t * escalaTiempo, y, escalaTiempo, altura - 10);
+      });
+
+      // Dibujar tiempos de espera en línea punteada
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = "gray";
+      ctx.beginPath();
+      let enEspera = false;
+
+      espera.forEach((e, i) => {
+        let xInicio = 50 + e.t * escalaTiempo;
+        let yCentro = y + altura / 2;
+
+        if (!enEspera) {
+          ctx.moveTo(xInicio, yCentro);
+          enEspera = true;
+        }
+
+        let siguiente = espera[i + 1];
+        if (!siguiente || siguiente.t !== e.t + 1) {
+          ctx.lineTo(xInicio + escalaTiempo, yCentro);
+          enEspera = false;
+        }
+      });
+
+      ctx.stroke();
+      ctx.setLineDash([]); // Restablecer línea normal
+
+      // Etiqueta de proceso
+      ctx.fillStyle = "black";
+      ctx.fillText(`P${proceso}`, 10, y + 20);
+    });
+
+    tiempo++;
+    if (tiempo <= tiempoMax) {
+      setTimeout(dibujarFrame, 1000);
+      console.log(tiempo);
+    } else {
+      mostrarTablaResultados(tablaResultados);
+    }
+  }
+
+  dibujarFrame();
+}
+
+function mostrarTablaResultados(tablaResultados) {
+  let container = document.getElementById("containerTable");
+  container.innerHTML = `<table class="table table-bordered">
+      <thead>
+          <tr>
+              <th>Proceso</th>
+              <th>Tiempo de llegada</th>
+              <th>t</th>
+              <th>Tiempo de arranque</th>
+              <th>Tiempo de finalización</th>
+              <th>T</th>
+              <th>W</th>
+              <th>P</th>
+          </tr>
+      </thead>
+      <tbody>
+          ${tablaResultados
+            .map(
+              (p) => `
+              <tr>
+                  <td>P${p.id}</td>
+                  <td>${p.llegada}</td>
+                  <td>${p.duracion}</td>
+                  <td>${p.arranque}</td>
+                  <td>${p.finalizacion}</td>
+                  <td>${p.T}</td>
+                  <td>${p.W}</td>
+                  <td>${p.P}</td>
+              </tr>`
+            )
+            .join("")}
+      </tbody>
+  </table>`;
+}
+
+
+
+function validarEntero(input) {
+  input.value = input.value.replace(/[^0-9]/g, ""); // Elimina caracteres no numéricos
+}
+
+function generarColores(cantidad) {
+  let colores = [];
+  for (let i = 0; i < cantidad; i++) {
+    let color = `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`; 
+    colores.push(color);
+  }
+  return colores;
+}
