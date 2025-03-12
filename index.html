@@ -3,36 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tarea</title>
-    <style>
-        canvas {
-            border: 1px solid black;
-            display: block;
-            margin: 20px auto;
-        }
-    </style>
+    <title>Simulación SRTF</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container-fluid p-4">
-        <div class="d-flex flex-row">
-            <div class="d-flex flex-column" style="width: 400px;">
-                <div class="mb-3">
-                    <label class="form-label" for="numProcesos">Ingrese la cantidad de procesos:</label>
-                    <input class="form-control"  type="number" id="numProcesos" min="1" step="1" oninput="validarEntero(this)">
+        <div class="text-center mb-4">
+            <h1 class="display-4">Simulación SRTF</h1>
+            <p class="lead">Algoritmo de planificación: Tiempo Restante Más Corto</p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Configuración de Procesos</h5>
+                        <div class="mb-3">
+                            <label for="numProcesos" class="form-label">Número de Procesos:</label>
+                            <input type="number" class="form-control" id="numProcesos" min="1" step="1" oninput="validarEntero(this)">
+                        </div>
+                        <button class="btn btn-primary w-100 mb-3" onclick="ingresarProcesos()">Ingresar Procesos</button>
+                        <div id="formProcesos"></div>
+                        <button id="iniciarSimulacion" class="btn btn-success w-100 mt-3" style="display:none;" onclick="simularSRTF()">Iniciar Simulación</button>
+                    </div>
                 </div>
-                <button class="btn btn-primary mb-4" onclick="ingresarProcesos()">Ingresar Procesos</button>
-                <div id="formProcesos"></div>
-                <button id="iniciarSimulacion" class="btn btn-success" style="display:none;" onclick="simularSRTF()">Iniciar Simulación</button>
             </div>
-            <div class="ms-5">
-                <h2>Diagrama</h2>
-                <canvas id="ganttCanvas" class="px-2" width="1050" height="700"></canvas>
+
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Diagrama de Gantt</h5>
+                        <div id="tiempoSistema" class="mb-3">Tiempo de Sistema: 0 segundos</div>
+                        <canvas id="ganttCanvas" width="800" height="400"></canvas>
+                        <div id="leyendaDinamica" class="mt-3">
+                            <h6>Estado de los Procesos:</h6>
+                            <div id="listos" class="mb-2"><strong>Listos:</strong> Ninguno</div>
+                            <div id="bloqueados" class="mb-2"><strong>Bloqueados:</strong> Ninguno</div>
+                            <div id="finalizados"><strong>Finalizados:</strong> Ninguno</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <div class="mt-5" id="containerTable"></div>
     </div>
-    
-    <div class="mt-5" id="containerTable"></div>
-    <script src="/script.js"></script>
+
+    <script src="script.js"></script>
 </body>
 </html>

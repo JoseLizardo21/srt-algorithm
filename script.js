@@ -1,29 +1,40 @@
 let procesos = [];
 let tablaResultados = [];
+let listListos = [];
+let listFinalizados = [];
 
 function ingresarProcesos() {
   let numProcesos = parseInt(document.getElementById("numProcesos").value);
   if (isNaN(numProcesos) || numProcesos < 1) {
     return;
   }
+
   let formProcesos = document.getElementById("formProcesos");
   formProcesos.innerHTML = "";
+
   for (let i = 0; i < numProcesos; i++) {
+    // Generar valores aleatorios para el tiempo de llegada y duración
+    let llegada = Math.floor(Math.random() * 10); // Tiempo de llegada entre 0 y 9
+    let duracion = Math.floor(Math.random() * 10) + 1; // Duración entre 1 y 10
+
     formProcesos.innerHTML += `
       <div class="mb-2">
         Proceso ${i + 1}:
         <div class="d-flex flex-row">
           <label>Llegada:</label>
-          <input type="number" id="llegada${i}" required style="width: 80px">
+          <input type="number" id="llegada${i}" required style="width: 80px" value="${llegada}">
           <label class="ms-2">Duración:</label>
-          <input type="number" id="duracion${i}" required style="width: 80px">
+          <input type="number" id="duracion${i}" required style="width: 80px" value="${duracion}">
         </div>
       </div>`;
   }
+
   document.getElementById("iniciarSimulacion").style.display = "block";
 }
 
 function simularSRTF() {
+  listListos = [];
+  listFinalizados = [];
   let numProcesos = parseInt(document.getElementById("numProcesos").value);
   procesos = [];
   tablaResultados = [];
@@ -42,7 +53,6 @@ function ejecutarSRTF() {
   let tiempoActual = 0;
   let finalizados = 0;
   let ganttChart = {};
-  let enEjecucion = null;
 
   while (finalizados < procesos.length) {
     let listaEjecutable = procesos.filter(
@@ -92,17 +102,44 @@ function generarDatosTabla(ganttChart) {
   });
 }
 
+function actualizarLeyenda(tiempo) {
+  // Filtramos primero los listos
+  procesos
+  .filter(p => p.llegada == tiempo)
+  .map(p => {
+    listListos.push(p.id);
+  });
+  // Después filtramos de listListos los finalizados
+  procesos
+  .filter(p => p.finalizacion == tiempo)
+  .map(p => {
+    listListos = listListos.filter(e => e !== p.id);
+    listFinalizados.push(p.id);
+  }
+  );
+
+  
+  // Actualizar la leyenda
+  document.getElementById("listos").innerHTML = `<strong>Listos:</strong> ${listListos}`;
+  document.getElementById("finalizados").innerHTML = `<strong>Finalizados:</strong> ${listFinalizados}`;
+}
 
 function animarGantt(ganttChart, tiempoMax) {
   let canvas = document.getElementById("ganttCanvas");
   let ctx = canvas.getContext("2d");
   let tiempo = 0;
-  let altura = 50;
+  let altura = 60; // Altura de cada proceso en el eje Y
   let escalaTiempo = (canvas.width / tiempoMax) * 0.9;
   let procesosOrdenados = Object.keys(ganttChart).sort((a, b) => b - a);
 
   function dibujarFrame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Actualizar el tiempo de sistema
+    document.getElementById("tiempoSistema").textContent = `Tiempo de Sistema: ${tiempo} segundos`;
+
+    // Actualizar la leyenda dinámica
+    actualizarLeyenda(tiempo);
 
     // Dibujar ejes
     ctx.strokeStyle = "black";
@@ -130,9 +167,8 @@ function animarGantt(ganttChart, tiempoMax) {
         (e) => e.t <= tiempo && e.tipo === "espera"
       );
 
-      console.log(proceso, index);
       // Dibujar ejecuciones
-      ctx.fillStyle = procesos.find(p => p.id == proceso).color; 
+      ctx.fillStyle = procesos.find(p => p.id == proceso).color;
       ctx.strokeStyle = "black";
       ctx.setLineDash([]);
       ejecucion.forEach((e) => {
@@ -171,8 +207,7 @@ function animarGantt(ganttChart, tiempoMax) {
 
     tiempo++;
     if (tiempo <= tiempoMax) {
-      setTimeout(dibujarFrame, 1000);
-      console.log(tiempo);
+      setTimeout(dibujarFrame, 1000); // Actualizar cada segundo
     } else {
       mostrarTablaResultados(tablaResultados);
     }
