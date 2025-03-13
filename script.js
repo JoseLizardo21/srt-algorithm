@@ -2,6 +2,7 @@ let procesos = [];
 let tablaResultados = [];
 let listListos = [];
 let listFinalizados = [];
+let isLoading = false;
 
 function ingresarProcesos() {
   let numProcesos = parseInt(document.getElementById("numProcesos").value);
@@ -33,6 +34,8 @@ function ingresarProcesos() {
 }
 
 function simularSRTF() {
+  if (isLoading) return;
+  isLoading = true;
   listListos = [];
   listFinalizados = [];
   let numProcesos = parseInt(document.getElementById("numProcesos").value);
@@ -209,6 +212,7 @@ function animarGantt(ganttChart, tiempoMax) {
     if (tiempo <= tiempoMax) {
       setTimeout(dibujarFrame, 1000); // Actualizar cada segundo
     } else {
+      isLoading = false;
       mostrarTablaResultados(tablaResultados);
     }
   }
