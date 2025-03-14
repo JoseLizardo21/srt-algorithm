@@ -137,7 +137,7 @@ function animarGantt(ganttChart, tiempoMax) {
   let tiempo = 0;
   let altura = 60; // Altura de cada proceso en el eje Y
   let escalaTiempo = (canvas.width / tiempoMax) * 0.9;
-  let procesosOrdenados = Object.keys(ganttChart).sort((a, b) => b - a);
+  let procesosOrdenados = Object.keys(ganttChart).sort((a, b) => a - b);
 
   function dibujarFrame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -165,10 +165,10 @@ function animarGantt(ganttChart, tiempoMax) {
     procesosOrdenados.forEach((proceso, index) => {
       let y = canvas.height - 50 - (index + 1) * altura;
       let ejecucion = ganttChart[proceso].filter(
-        (e) => e.t <= tiempo && e.tipo === "ejecucion"
+      (e) => e.t <= tiempo && e.tipo === "ejecucion"
       );
       let espera = ganttChart[proceso].filter(
-        (e) => e.t <= tiempo && e.tipo === "espera"
+      (e) => e.t <= tiempo && e.tipo === "espera"
       );
 
       // Dibujar ejecuciones
@@ -176,7 +176,7 @@ function animarGantt(ganttChart, tiempoMax) {
       ctx.strokeStyle = "black";
       ctx.setLineDash([]);
       ejecucion.forEach((e) => {
-        ctx.fillRect(50 + e.t * escalaTiempo, y, escalaTiempo, altura - 10);
+      ctx.fillRect(50 + e.t * escalaTiempo, y, escalaTiempo, altura - 10);
       });
 
       // Dibujar tiempos de espera en línea punteada
