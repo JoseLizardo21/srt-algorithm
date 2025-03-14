@@ -105,12 +105,21 @@ function generarDatosTabla(ganttChart) {
   });
 }
 
-function actualizarLeyenda(tiempo) {
+function actualizarLeyenda(tiempo,ganttChart) {
   // Filtramos primero los listos
+  console.log(ganttChart)
+  // procesos
+  // .filter(p => p.llegada == tiempo)
+  // .map(p => {
+  //   listListos.push(p.id);
+  // });
+
   procesos
-  .filter(p => p.llegada == tiempo)
+  .filter(p => ganttChart[p.id] && ganttChart[p.id].some(e => e.t == tiempo && e.tipo === "espera"))
   .map(p => {
-    listListos.push(p.id);
+    if (!listListos.includes(p.id)) {
+      listListos.push(p.id);
+    }
   });
   // Después filtramos de listListos los finalizados
   procesos
@@ -142,7 +151,7 @@ function animarGantt(ganttChart, tiempoMax) {
     document.getElementById("tiempoSistema").textContent = `Tiempo de Sistema: ${tiempo} segundos`;
 
     // Actualizar la leyenda dinámica
-    actualizarLeyenda(tiempo);
+    actualizarLeyenda(tiempo, ganttChart);
 
     // Dibujar ejes
     ctx.strokeStyle = "black";
