@@ -3,6 +3,8 @@ let tablaResultados = [];
 let listListos = [];
 let listFinalizados = [];
 let isLoading = false;
+let tiempo = 0;
+let isPause = false;
 
 function ingresarProcesos() {
   let numProcesos = parseInt(document.getElementById("numProcesos").value);
@@ -34,6 +36,9 @@ function ingresarProcesos() {
 }
 
 function simularSRTF() {
+  tiempo = 0;
+  isPause = false;
+  document.getElementById("btn-controls").style.display = "block";
   if (isLoading) return;
   isLoading = true;
   listListos = [];
@@ -134,12 +139,15 @@ function actualizarLeyenda(tiempo,ganttChart) {
 function animarGantt(ganttChart, tiempoMax) {
   let canvas = document.getElementById("ganttCanvas");
   let ctx = canvas.getContext("2d");
-  let tiempo = 0;
+  tiempo = 0;
   let altura = 60; // Altura de cada proceso en el eje Y
   let escalaTiempo = (canvas.width / tiempoMax) * 0.9;
   let procesosOrdenados = Object.keys(ganttChart).sort((a, b) => a - b);
 
   function dibujarFrame() {
+    if (isPause) {
+      return;
+    }
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Actualizar el tiempo de sistema
@@ -282,4 +290,9 @@ function generarColores(cantidad) {
     colores.push(color);
   }
   return colores;
+}
+
+function pausarSimulacion() {
+  isPause = true;
+  isLoading = false;
 }
