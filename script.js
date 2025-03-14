@@ -307,12 +307,12 @@ function validarEntero(input) {
 }
 
 function generarColores(cantidad) {
-  let colores = new Set();
-  while (colores.size < cantidad) {
-    let color = `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`;
-    colores.add(color);
-  }
-  return Array.from(colores);
+  return [
+    "#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#A133FF",
+    "#33FFF5", "#FF8C33", "#8CFF33", "#338CFF", "#FF338C",
+    "#8C33FF", "#33FF8C", "#FF5733", "#33FF57", "#3357FF",
+    "#FF33A1", "#A133FF", "#33FFF5", "#FF8C33", "#8CFF33"
+  ];
 }
 
 function pausarSimulacion() {
