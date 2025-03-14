@@ -329,7 +329,13 @@ function generarColores(cantidad) {
   ];
 }
 
-function pausarSimulacion() {
-  isPause = true;
-  isLoading = false;
+function limpiar() {
+  // procesos = [];  
+  // tablaResultados = [];
+  // listListos = [];
+  // listFinalizados = [];
+  // isLoading = false;
+  // tiempo = 0;
+  // ejecutarSRTF();
+  location.reload();
 }
