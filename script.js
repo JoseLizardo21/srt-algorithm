@@ -51,7 +51,13 @@ function simularSRTF() {
   for (let i = 0; i < numProcesos; i++) {
     let llegada = parseInt(document.getElementById(`llegada${i}`).value);
     let duracion = parseInt(document.getElementById(`duracion${i}`).value);
-    procesos.push({ id: i + 1, llegada, duracion, restante: duracion, color: colores[i]});
+    procesos.push({
+      id: i + 1,
+      llegada,
+      duracion,
+      restante: duracion,
+      color: colores[i],
+    });
   }
   procesos.sort((a, b) => a.llegada - b.llegada);
   ejecutarSRTF();
@@ -93,47 +99,58 @@ function ejecutarSRTF() {
   animarGantt(ganttChart, tiempoActual);
 }
 
-
 function generarDatosTabla(ganttChart) {
   let procesosCopy = [...procesos];
-  procesosCopy.forEach(p => {
-    let ejecuciones = ganttChart[p.id].filter(e => e.tipo === "ejecucion");
-    
+  procesosCopy.forEach((p) => {
+    let ejecuciones = ganttChart[p.id].filter((e) => e.tipo === "ejecucion");
+
     p.arranque = ejecuciones.length > 0 ? ejecuciones[0].t : null; // Primer instante de ejecución
-    p.finalizacion = ejecuciones.length > 0 ? ejecuciones[ejecuciones.length - 1].t + 1 : null; // Último instante de ejecución +1
+    p.finalizacion =
+      ejecuciones.length > 0 ? ejecuciones[ejecuciones.length - 1].t + 1 : null; // Último instante de ejecución +1
 
     p.T = p.finalizacion - p.llegada;
     p.W = p.T - p.duracion;
-    p.P = (p.duracion > 0) ? (p.T / p.duracion).toFixed(2) : 0;
+    p.P = p.duracion > 0 ? (p.T / p.duracion).toFixed(2) : 0;
 
     tablaResultados.push(p);
   });
 }
 
-function actualizarLeyenda(tiempo,ganttChart) {
+function actualizarLeyenda(tiempo, ganttChart) {
   // Filtramos primero los listos
-  listListos = []
+  listListos = [];
   procesos
-  .filter(p => ganttChart[p.id] && ganttChart[p.id].some(e => e.t == tiempo && e.tipo === "espera"))
-  .map(p => {
-    if (!listListos.includes(p.id)) {
-      listListos.push(p.id);
-    }
-  });
+    .filter(
+      (p) =>
+        ganttChart[p.id] &&
+        ganttChart[p.id].some((e) => e.t == tiempo && e.tipo === "espera")
+    )
+    .map((p) => {
+      if (!listListos.includes(p.id)) {
+        listListos.push(p.id);
+      }
+    });
   // Después filtramos de listListos los finalizados
   procesos
-  .filter(p => p.finalizacion == tiempo)
-  .map(p => {
-    listListos = listListos.filter(e => e !== p.id);
-    if (!listFinalizados.includes(p.id)) {
-      listFinalizados.push(p.id);
-    }
-  });
+    .filter((p) => p.finalizacion == tiempo)
+    .map((p) => {
+      listListos = listListos.filter((e) => e !== p.id);
+      if (!listFinalizados.includes(p.id)) {
+        listFinalizados.push(p.id);
+      }
+    });
 
-  
   // Actualizar la leyenda
-  document.getElementById("listos").innerHTML = `<strong>Listos:</strong> ${listListos.map(id => `P${id}`).join(", ")}`;
-  document.getElementById("finalizados").innerHTML = `<strong>Finalizados:</strong> ${listFinalizados.map(id => `P${id}`).join(", ")}`;
+  document.getElementById(
+    "listos"
+  ).innerHTML = `<strong>Listos:</strong> ${listListos
+    .map((id) => `P${id}`)
+    .join(", ")}`;
+  document.getElementById(
+    "finalizados"
+  ).innerHTML = `<strong>Finalizados:</strong> ${listFinalizados
+    .map((id) => `P${id}`)
+    .join(", ")}`;
 }
 
 function animarGantt(ganttChart, tiempoMax) {
@@ -151,7 +168,9 @@ function animarGantt(ganttChart, tiempoMax) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Actualizar el tiempo de sistema
-    document.getElementById("tiempoSistema").textContent = `Tiempo de Sistema: ${tiempo} segundos`;
+    document.getElementById(
+      "tiempoSistema"
+    ).textContent = `Tiempo de Sistema: ${tiempo} segundos`;
 
     // Dibujar ejes
     ctx.strokeStyle = "black";
@@ -173,18 +192,18 @@ function animarGantt(ganttChart, tiempoMax) {
     procesosOrdenados.forEach((proceso, index) => {
       let y = canvas.height - 50 - (index + 1) * altura;
       let ejecucion = ganttChart[proceso].filter(
-      (e) => e.t <= tiempo && e.tipo === "ejecucion"
+        (e) => e.t <= tiempo && e.tipo === "ejecucion"
       );
       let espera = ganttChart[proceso].filter(
-      (e) => e.t <= tiempo && e.tipo === "espera"
+        (e) => e.t <= tiempo && e.tipo === "espera"
       );
 
       // Dibujar ejecuciones
-      ctx.fillStyle = procesos.find(p => p.id == proceso).color;
+      ctx.fillStyle = procesos.find((p) => p.id == proceso).color;
       ctx.strokeStyle = "black";
       ctx.setLineDash([]);
       ejecucion.forEach((e) => {
-      ctx.fillRect(50 + e.t * escalaTiempo, y, escalaTiempo, 10); // Altura de 10
+        ctx.fillRect(50 + e.t * escalaTiempo, y, escalaTiempo, 10); // Altura de 10
       });
 
       // Dibujar tiempos de espera en línea punteada
@@ -194,32 +213,38 @@ function animarGantt(ganttChart, tiempoMax) {
       let enEspera = false;
 
       espera.forEach((e, i) => {
-      let xInicio = 50 + e.t * escalaTiempo;
-      let yCentro = y + 5; // Centro del rectángulo de altura 10
+        let xInicio = 50 + e.t * escalaTiempo;
+        let yCentro = y + 5; // Centro del rectángulo de altura 10
 
-      if (!enEspera) {
-        ctx.moveTo(xInicio, yCentro);
-        enEspera = true;
-      }
+        if (!enEspera) {
+          ctx.moveTo(xInicio, yCentro);
+          enEspera = true;
+        }
 
-      let siguiente = espera[i + 1];
-      if (!siguiente || siguiente.t !== e.t + 1) {
-        ctx.lineTo(xInicio + escalaTiempo, yCentro);
-        enEspera = false;
-      }
+        let siguiente = espera[i + 1];
+        if (!siguiente || siguiente.t !== e.t + 1) {
+          ctx.lineTo(xInicio + escalaTiempo, yCentro);
+          enEspera = false;
+        }
       });
 
       ctx.stroke();
       ctx.setLineDash([]); // Restablecer línea normal
 
       // Dibujar círculo en el tiempo de llegada
-      let procesoData = procesos.find(p => p.id == proceso);
+      let procesoData = procesos.find((p) => p.id == proceso);
       if (tiempo >= procesoData.llegada) {
-      ctx.fillStyle = procesoData.color;
-      ctx.beginPath();
-      ctx.arc(50 + procesoData.llegada * escalaTiempo, y + 5, 10, 0, 2 * Math.PI); // Radio de 5
-      ctx.fill();
-      ctx.stroke();
+        ctx.fillStyle = procesoData.color;
+        ctx.beginPath();
+        ctx.arc(
+          50 + procesoData.llegada * escalaTiempo,
+          y + 5,
+          10,
+          0,
+          2 * Math.PI
+        ); // Radio de 5
+        ctx.fill();
+        ctx.stroke();
       }
 
       // Actualizar la leyenda dinámica
@@ -277,8 +302,6 @@ function mostrarTablaResultados(tablaResultados) {
   </table>`;
 }
 
-
-
 function validarEntero(input) {
   input.value = input.value.replace(/[^0-9]/g, ""); // Elimina caracteres no numéricos
 }
@@ -286,7 +309,7 @@ function validarEntero(input) {
 function generarColores(cantidad) {
   let colores = [];
   for (let i = 0; i < cantidad; i++) {
-    let color = `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`; 
+    let color = `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`;
     colores.push(color);
   }
   return colores;
