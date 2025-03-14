@@ -269,6 +269,7 @@ function animarGantt(ganttChart, tiempoMax) {
 
 function mostrarTablaResultados(tablaResultados) {
   let container = document.getElementById("containerTable");
+  let tiempoOcio = calcularTiempoOcio();
   container.innerHTML = `<table class="table table-bordered">
       <thead>
           <tr>
@@ -299,7 +300,20 @@ function mostrarTablaResultados(tablaResultados) {
             )
             .join("")}
       </tbody>
-  </table>`;
+  </table>
+  <div><strong>Tiempo de ocio del sistema:</strong> ${tiempoOcio} segundos</div>`;
+}
+
+function calcularTiempoOcio() {
+  let tiempoOcio = 0;
+  let tiempoActual = 0;
+  procesos.forEach((p) => {
+    if (p.llegada > tiempoActual) {
+      tiempoOcio += p.llegada - tiempoActual;
+    }
+    tiempoActual = Math.max(tiempoActual, p.finalizacion);
+  });
+  return tiempoOcio;
 }
 
 function validarEntero(input) {
