@@ -307,12 +307,12 @@ function validarEntero(input) {
 }
 
 function generarColores(cantidad) {
-  let colores = [];
-  for (let i = 0; i < cantidad; i++) {
+  let colores = new Set();
+  while (colores.size < cantidad) {
     let color = `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`;
-    colores.push(color);
+    colores.add(color);
   }
-  return colores;
+  return Array.from(colores);
 }
 
 function pausarSimulacion() {
