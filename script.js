@@ -127,8 +127,8 @@ function actualizarLeyenda(tiempo,ganttChart) {
 
   
   // Actualizar la leyenda
-  document.getElementById("listos").innerHTML = `<strong>Listos:</strong> ${listListos}`;
-  document.getElementById("finalizados").innerHTML = `<strong>Finalizados:</strong> ${listFinalizados}`;
+  document.getElementById("listos").innerHTML = `<strong>Listos:</strong> ${listListos.map(id => `P${id}`).join(", ")}`;
+  document.getElementById("finalizados").innerHTML = `<strong>Finalizados:</strong> ${listFinalizados.map(id => `P${id}`).join(", ")}`;
 }
 
 function animarGantt(ganttChart, tiempoMax) {
