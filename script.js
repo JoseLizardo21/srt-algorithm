@@ -162,9 +162,6 @@ function animarGantt(ganttChart, tiempoMax) {
   let procesosOrdenados = Object.keys(ganttChart).sort((a, b) => a - b);
 
   function dibujarFrame() {
-    if (isPause) {
-      return;
-    }
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Actualizar el tiempo de sistema
@@ -256,6 +253,9 @@ function animarGantt(ganttChart, tiempoMax) {
     });
 
     tiempo++;
+    if (isPause) {
+      return;
+    }
     if (tiempo <= tiempoMax) {
       setTimeout(dibujarFrame, 1000); // Actualizar cada segundo
     } else {
