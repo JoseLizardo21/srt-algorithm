@@ -176,7 +176,7 @@ function animarGantt(ganttChart, tiempoMax) {
       ctx.strokeStyle = "black";
       ctx.setLineDash([]);
       ejecucion.forEach((e) => {
-      ctx.fillRect(50 + e.t * escalaTiempo, y, escalaTiempo, altura - 10);
+      ctx.fillRect(50 + e.t * escalaTiempo, y, escalaTiempo, 10); // Altura de 10
       });
 
       // Dibujar tiempos de espera en línea punteada
@@ -186,19 +186,19 @@ function animarGantt(ganttChart, tiempoMax) {
       let enEspera = false;
 
       espera.forEach((e, i) => {
-        let xInicio = 50 + e.t * escalaTiempo;
-        let yCentro = y + altura / 2;
+      let xInicio = 50 + e.t * escalaTiempo;
+      let yCentro = y + 5; // Centro del rectángulo de altura 10
 
-        if (!enEspera) {
-          ctx.moveTo(xInicio, yCentro);
-          enEspera = true;
-        }
+      if (!enEspera) {
+        ctx.moveTo(xInicio, yCentro);
+        enEspera = true;
+      }
 
-        let siguiente = espera[i + 1];
-        if (!siguiente || siguiente.t !== e.t + 1) {
-          ctx.lineTo(xInicio + escalaTiempo, yCentro);
-          enEspera = false;
-        }
+      let siguiente = espera[i + 1];
+      if (!siguiente || siguiente.t !== e.t + 1) {
+        ctx.lineTo(xInicio + escalaTiempo, yCentro);
+        enEspera = false;
+      }
       });
 
       ctx.stroke();
