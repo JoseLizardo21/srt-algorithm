@@ -107,13 +107,7 @@ function generarDatosTabla(ganttChart) {
 
 function actualizarLeyenda(tiempo,ganttChart) {
   // Filtramos primero los listos
-  console.log(ganttChart)
-  // procesos
-  // .filter(p => p.llegada == tiempo)
-  // .map(p => {
-  //   listListos.push(p.id);
-  // });
-
+  listListos = []
   procesos
   .filter(p => ganttChart[p.id] && ganttChart[p.id].some(e => e.t == tiempo && e.tipo === "espera"))
   .map(p => {
@@ -126,9 +120,10 @@ function actualizarLeyenda(tiempo,ganttChart) {
   .filter(p => p.finalizacion == tiempo)
   .map(p => {
     listListos = listListos.filter(e => e !== p.id);
-    listFinalizados.push(p.id);
-  }
-  );
+    if (!listFinalizados.includes(p.id)) {
+      listFinalizados.push(p.id);
+    }
+  });
 
   
   // Actualizar la leyenda
@@ -149,9 +144,6 @@ function animarGantt(ganttChart, tiempoMax) {
 
     // Actualizar el tiempo de sistema
     document.getElementById("tiempoSistema").textContent = `Tiempo de Sistema: ${tiempo} segundos`;
-
-    // Actualizar la leyenda dinámica
-    actualizarLeyenda(tiempo, ganttChart);
 
     // Dibujar ejes
     ctx.strokeStyle = "black";
@@ -211,6 +203,9 @@ function animarGantt(ganttChart, tiempoMax) {
 
       ctx.stroke();
       ctx.setLineDash([]); // Restablecer línea normal
+
+      // Actualizar la leyenda dinámica
+      actualizarLeyenda(tiempo, ganttChart);
 
       // Etiqueta de proceso
       ctx.fillStyle = "black";
