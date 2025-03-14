@@ -204,6 +204,16 @@ function animarGantt(ganttChart, tiempoMax) {
       ctx.stroke();
       ctx.setLineDash([]); // Restablecer línea normal
 
+      // Dibujar círculo en el tiempo de llegada
+      let procesoData = procesos.find(p => p.id == proceso);
+      if (tiempo >= procesoData.llegada) {
+      ctx.fillStyle = procesoData.color;
+      ctx.beginPath();
+      ctx.arc(50 + procesoData.llegada * escalaTiempo, y + 5, 10, 0, 2 * Math.PI); // Radio de 5
+      ctx.fill();
+      ctx.stroke();
+      }
+
       // Actualizar la leyenda dinámica
       actualizarLeyenda(tiempo, ganttChart);
 
